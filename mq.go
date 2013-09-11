@@ -8,6 +8,7 @@ typedef struct _sysv_msg {
 } sysv_msg;
 */
 import "C"
+import "errors"
 
 // Represents the message queue
 type MessageQueue struct {
@@ -33,10 +34,15 @@ func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	mq := new(MessageQueue)
 	mq.config = config
 	err := mq.connect()
+
+  if err != nil {
+    return mq, errors.New("Error connecting to queue: " + err.Error())
+  }
+
 	mq.buffer, err = allocateBuffer(mq.config.MaxSize)
 
 	if err != nil {
-		return mq, err
+    return mq, errors.New("Error allocating buffer for queue: " + err.Error())
 	}
 
 	return mq, err
@@ -64,11 +70,10 @@ func (mq *MessageQueue) connect() (err error) {
 		mq.config.Key, err = ftok(mq.config.Path, mq.config.ProjId)
 
 		if err != nil {
-			return err
+      return errors.New("Error obtaining key with ftok: " + err.Error())
 		}
 	}
 
 	mq.id, err = msgget(mq.config.Key, mq.config.Mode)
-
 	return err
 }
