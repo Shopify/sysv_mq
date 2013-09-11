@@ -35,14 +35,14 @@ func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	mq.config = config
 	err := mq.connect()
 
-  if err != nil {
-    return mq, errors.New("Error connecting to queue: " + err.Error())
-  }
+	if err != nil {
+		return mq, errors.New("Error connecting to queue: " + err.Error())
+	}
 
 	mq.buffer, err = allocateBuffer(mq.config.MaxSize)
 
 	if err != nil {
-    return mq, errors.New("Error allocating buffer for queue: " + err.Error())
+		return mq, errors.New("Error allocating buffer for queue: " + err.Error())
 	}
 
 	return mq, err
@@ -56,6 +56,7 @@ func (mq *MessageQueue) Send(message string, msgType int) error {
 // Receive a string message with the type specified by the integer argument.
 // Pass 0 to retrieve the message at the top of the queue, regardless of type.
 func (mq *MessageQueue) Receive(msgType int) (string, error) {
+	mq.buffer.mtype = C.long(msgType)
 	return msgrcv(mq.id, msgType, mq.buffer, mq.config.MaxSize, 0)
 }
 
@@ -70,7 +71,7 @@ func (mq *MessageQueue) connect() (err error) {
 		mq.config.Key, err = ftok(mq.config.Path, mq.config.ProjId)
 
 		if err != nil {
-      return errors.New("Error obtaining key with ftok: " + err.Error())
+			return errors.New("Error obtaining key with ftok: " + err.Error())
 		}
 	}
 

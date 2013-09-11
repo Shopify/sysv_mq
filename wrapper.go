@@ -70,8 +70,7 @@ func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int,
 // msgop(2)
 // ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (string, error) {
-	length, err := C.msgrcv(C.int(key), unsafe.Pointer(buffer), C.size_t(strSize),
-		C.long(mtype), C.int(flags))
+	length, err := C.msgrcv(C.int(key), unsafe.Pointer(buffer), C.size_t(strSize), C.long(mtype), C.int(flags))
 
 	if err != nil {
 		return "", err
