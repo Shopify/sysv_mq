@@ -1,6 +1,7 @@
 package sysv_mq
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -18,6 +19,30 @@ func SampleMessageQueue(t *testing.T) *MessageQueue {
 	}
 
 	return mq
+}
+
+func ExampleSendAndReceive() {
+	mq, err := NewMessageQueue(&QueueConfig{
+		Key:     0xDEADBEEF,
+		MaxSize: 1024,
+		Mode:    IPC_CREAT | 0600,
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = mq.Send("Hello World", 1)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	response, err := mq.Receive(0)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(response)
+	// Output:
+	// Hello World
 }
 
 func Test_NewMessageQueue(t *testing.T) {
