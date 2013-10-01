@@ -21,7 +21,7 @@ func SampleMessageQueue(t *testing.T) *MessageQueue {
 	return mq
 }
 
-func ExampleSendAndReceive() {
+func ExampleMessageQueue() {
 	mq, err := NewMessageQueue(&QueueConfig{
 		Key:     0xDEADBEEF,
 		MaxSize: 1024,
