@@ -21,35 +21,35 @@ if it doesn't exist).
 package main
 
 import (
-  "fmt"
-  "github.com/Shopify/sysv_mq"
+	"fmt"
+	"github.com/Shopify/sysv_mq"
 )
 
 func main() {
-  mq, err := sysv_mq.NewMessageQueue(&QueueConfig{
-    Key:     0xDEADBEEF, // SysV IPC key
-    MaxSize: 1024, // Max size of a message
-    Mode:    IPC_CREAT | 0600, // Creates if it doesn't exist, 0600 permissions
-  })
-  if err != nil {
-    fmt.Println(err)
-  }
+	mq, err := sysv_mq.NewMessageQueue(&sysv_mq.QueueConfig{
+		Key:     0xDEADBEEF,               // SysV IPC key
+		MaxSize: 1024,                     // Max size of a message
+		Mode:    sysv_mq.IPC_CREAT | 0600, // Creates if it doesn't exist, 0600 permissions
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
 
-  // Send a message to the queue
-  err = mq.Send("Hello World", 1)
-  if err != nil {
-    fmt.Println(err)
-  }
+	// Send a message to the queue
+	err = mq.Send("Hello World", 1)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-  // Receive a message from the queue, 0 gives you the top message regardless of
-  // message type passed to send().
-  response, err := mq.Receive(0)
-  if err != nil {
-    fmt.Println(err)
-  }
-  fmt.Println(response)
-  // Output:
-  // Hello World
+	// Receive a message from the queue, 0 gives you the top message regardless of
+	// message type passed to send().
+	response, err := mq.Receive(0)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(response)
+	// Output:
+	// Hello World
 }
 ```
 
