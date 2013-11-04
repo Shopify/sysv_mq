@@ -2,6 +2,9 @@ package sysv_mq
 
 /*
 #include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
 typedef struct _sysv_msg {
   long mtype;
   char mtext[];
@@ -62,8 +65,13 @@ func (mq *MessageQueue) Receive(msgType int) (string, error) {
 
 // Number of messages currently in the queue.
 func (mq *MessageQueue) Count() (int, error) {
-	info, err := msgctl(mq.id, IPC_STAT)
+	info, err := mq.Stat()
 	return int(info.msg_qnum), err
+}
+
+// Wraps msgctl(mq.id, IPC_STAT).
+func (mq *MessageQueue) Stat() (*C.struct_msqid_ds, error) {
+	return msgctl(mq.id, IPC_STAT)
 }
 
 func (mq *MessageQueue) connect() (err error) {
