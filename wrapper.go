@@ -137,3 +137,33 @@ func allocateBuffer(strSize int) (*C.sysv_msg, error) {
 
 	return buffer, nil
 }
+
+// Wraps msgctl(key, IPC_STAT).
+func ipcStat(key int) (*QueueStats, error) {
+	info, err := msgctl(key, IPC_STAT)
+	if err != nil {
+		return nil, err
+	}
+
+	perm := QueuePermissions{
+		Uid:  uint32(info.msg_perm.uid),
+		Gid:  uint32(info.msg_perm.gid),
+		Cuid: uint32(info.msg_perm.cuid),
+		Cgid: uint32(info.msg_perm.cgid),
+		Mode: uint16(info.msg_perm.mode),
+	}
+
+	stat := &QueueStats{
+		Perm:   perm,
+		Stime:  int64(info.msg_stime),
+		Rtime:  int64(info.msg_rtime),
+		Ctime:  int64(info.msg_ctime),
+		Cbytes: cbytesFromStruct(info),
+		Qnum:   uint64(info.msg_qnum),
+		Qbytes: uint64(info.msg_qbytes),
+		Lspid:  int32(info.msg_lspid),
+		Lrpid:  int32(info.msg_lrpid),
+	}
+
+	return stat, nil
+}

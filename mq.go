@@ -20,23 +20,23 @@ type MessageQueue struct {
 // Wraps the C structure "struct msgid_ds" (see msgctl(2))
 type QueueStats struct {
 	Perm   QueuePermissions
-	Stime  int
-	Rtime  int
-	Ctime  int
-	Cbytes int
-	Qnum   int
-	Qbytes int
-	Lspid  int
-	Lrpid  int
+	Stime  int64  // signed long, according to bits/types.h
+	Rtime  int64  //
+	Ctime  int64  //
+	Cbytes uint64 // unsigned long, according to msgctl(2)
+	Qnum   uint64 // unsigned long, according to bits/msq.h
+	Qbytes uint64 // unsigned long, according to bits/msg.h
+	Lspid  int32  // signed int32, according to bits/typesizes.h
+	Lrpid  int32  //
 }
 
 // Wraps the C structure "struct ipc_perm" (see msgctl(2))
 type QueuePermissions struct {
-	Uid  uint
-	Gid  uint
-	Cuid uint
-	Cgid uint
-	Mode uint
+	Uid  uint32 // unsigned int32, according to bits/typesizes.h
+	Gid  uint32 //
+	Cuid uint32 //
+	Cgid uint32 //
+	Mode uint16 // unsigned short, according to msgctl(2)
 }
 
 // QueueConfig is used to configure an instance of the message queue.
@@ -82,43 +82,19 @@ func (mq *MessageQueue) Receive(msgType int) (string, error) {
 	return msgrcv(mq.id, msgType, mq.buffer, mq.config.MaxSize, 0)
 }
 
+// Get statistics about the message queue.
 func (mq *MessageQueue) Stat() (*QueueStats, error) {
-	info, err := msgctl(mq.id, IPC_STAT)
-	if err != nil {
-		return nil, err
-	}
-
-	perm := QueuePermissions{
-		Uid:  uint(info.msg_perm.uid),
-		Gid:  uint(info.msg_perm.gid),
-		Cuid: uint(info.msg_perm.cuid),
-		Cgid: uint(info.msg_perm.cgid),
-		Mode: uint(info.msg_perm.mode),
-	}
-
-	stat := &QueueStats{
-		Perm:   perm,
-		Stime:  int(info.msg_stime),
-		Rtime:  int(info.msg_rtime),
-		Ctime:  int(info.msg_ctime),
-		Cbytes: cbytesFromStruct(info),
-		Qnum:   int(info.msg_qnum),
-		Qbytes: int(info.msg_qbytes),
-		Lspid:  int(info.msg_lspid),
-		Lrpid:  int(info.msg_lrpid),
-	}
-
-	return stat, nil
+	return ipcStat(mq.id)
 }
 
 // Number of messages currently in the queue.
-func (mq *MessageQueue) Count() (int, error) {
+func (mq *MessageQueue) Count() (uint64, error) {
 	info, err := mq.Stat()
 	return info.Qnum, err
 }
 
 // Size of the queue in bytes.
-func (mq *MessageQueue) Size() (int, error) {
+func (mq *MessageQueue) Size() (uint64, error) {
 	info, err := mq.Stat()
 	return info.Cbytes, err
 }
