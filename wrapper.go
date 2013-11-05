@@ -11,6 +11,16 @@ package sysv_mq
 #include <string.h>
 #include <sys/msg.h>
 
+#ifdef __APPLE__
+#include <Availability.h>
+#endif
+
+#ifdef __MAC_10_9
+unsigned long ulongOnMavericks(size_t size) { return (unsigned long)size; }
+#else
+size_t ulongOnMavericks(size_t size) { return (size_t)size; }
+#endif
+
 typedef struct _sysv_msg {
   long mtype;
   char mtext[];
@@ -60,7 +70,7 @@ func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int,
 	msgSize := C.size_t(len(message))
 
 	buffer.mtype = C.long(mtype)
-	C.strncpy(C.get_string(buffer), cString, msgSize)
+	C.strncpy(C.get_string(buffer), cString, C.ulongOnMavericks(msgSize))
 
 	_, err := C.msgsnd(C.int(key), unsafe.Pointer(buffer), msgSize, C.int(flags))
 
@@ -128,7 +138,7 @@ func msgctl(key int, cmd int) (*C.struct_msqid_ds, error) {
 // zero-length arrays that Go does not support
 func allocateBuffer(strSize int) (*C.sysv_msg, error) {
 	// The +1 here is because strcpy in msgsnd copies the terminating null byte
-	bufferSize := C.size_t(strSize) + C.size_t(unsafe.Sizeof(C.long(1)))
+	bufferSize := C.ulongOnMavericks(C.size_t(strSize)) + C.ulongOnMavericks(C.size_t(unsafe.Sizeof(C.long(1))))
 	buffer := (*C.sysv_msg)(C.malloc(bufferSize))
 
 	if buffer == nil {
@@ -136,4 +146,34 @@ func allocateBuffer(strSize int) (*C.sysv_msg, error) {
 	}
 
 	return buffer, nil
+}
+
+// Wraps msgctl(key, IPC_STAT).
+func ipcStat(key int) (*QueueStats, error) {
+	info, err := msgctl(key, IPC_STAT)
+	if err != nil {
+		return nil, err
+	}
+
+	perm := QueuePermissions{
+		Uid:  uint32(info.msg_perm.uid),
+		Gid:  uint32(info.msg_perm.gid),
+		Cuid: uint32(info.msg_perm.cuid),
+		Cgid: uint32(info.msg_perm.cgid),
+		Mode: uint16(info.msg_perm.mode),
+	}
+
+	stat := &QueueStats{
+		Perm:   perm,
+		Stime:  int64(info.msg_stime),
+		Rtime:  int64(info.msg_rtime),
+		Ctime:  int64(info.msg_ctime),
+		Cbytes: cbytesFromStruct(info),
+		Qnum:   uint64(info.msg_qnum),
+		Qbytes: uint64(info.msg_qbytes),
+		Lspid:  int32(info.msg_lspid),
+		Lrpid:  int32(info.msg_lrpid),
+	}
+
+	return stat, nil
 }

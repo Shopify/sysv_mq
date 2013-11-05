@@ -154,7 +154,7 @@ func Test_QueueSize(t *testing.T) {
 		t.Error(err)
 	}
 
-	if size != len(wired) {
+	if size != uint64(len(wired)) {
 		t.Errorf("expected queue of len %d queue, got: %d\n", len(wired), size)
 	}
 
