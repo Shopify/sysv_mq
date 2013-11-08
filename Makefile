@@ -1,7 +1,7 @@
 UNAME := $(shell uname -s)
 
 test: clean
-	go test
+	go test -v
 
 # This is to remove all queues before running the tests. This makes sure that if
 # tests failed and leaked things to the queue, the queue is fresh before running
