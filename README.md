@@ -66,3 +66,4 @@ func main() {
 [overview]: http://man7.org/linux/man-pages/man7/svipc.7.html
 [rcvsnd]: http://man7.org/linux/man-pages/man2/msgrcv.2.html
 [godoc]: http://godoc.org/github.com/Shopify/sysv_mq
+
