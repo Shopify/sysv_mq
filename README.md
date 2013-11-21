@@ -1,5 +1,7 @@
 # Go wrapper for SysV Message Queues
 
+[![Build Status](https://travis-ci.org/Shopify/sysv_mq.png)](https://travis-ci.org/Shopify/sysv_mq)
+
 sysv_mq is a Go wrapper for [SysV Message Queues](). It's important you
 read the [manual for SysV Message Queues][overview], [msgrcv(2)][rcvsnd] and
 [msgsnd(2)][rcvsnd] before using this library. `sysv_mq` is a very light
