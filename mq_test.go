@@ -45,18 +45,6 @@ func ExampleMessageQueue() {
 	// Hello World
 }
 
-func Test_NewMessageQueue(t *testing.T) {
-	mq := SampleMessageQueue(t)
-
-	if mq.id == 0 {
-		t.Error("expected mq id to be set")
-	}
-
-	if mq.config.Mode == 0 {
-		t.Error("expected mode to be set")
-	}
-}
-
 func Test_SendMessage(t *testing.T) {
 	mq := SampleMessageQueue(t)
 
