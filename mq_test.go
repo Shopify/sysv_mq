@@ -50,13 +50,13 @@ func Test_SendMessage(t *testing.T) {
 
 	wired := "Narwhals and ice cream"
 
-	err := mq.Send(wired, 1)
+	err := mq.Send(wired, 4)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	response, err := mq.Receive(0)
+	response, mtype, err := mq.ReceiveWithType(0)
 
 	if err != nil {
 		t.Error(err)
@@ -64,6 +64,10 @@ func Test_SendMessage(t *testing.T) {
 
 	if wired != response {
 		t.Error("expected %s, got: %s", wired, response)
+	}
+
+	if 4 != mtype {
+		t.Error("expected mtype 4, got: %d", mtype)
 	}
 }
 
