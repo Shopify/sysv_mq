@@ -52,7 +52,9 @@ func msgsnd(key int, message []byte, buffer *C.sysv_msg, maxSize int, mtype int,
 	msgSize := C.size_t(len(message))
 
 	buffer.mtype = C.long(mtype)
-	C.memcpy(unsafe.Pointer(&buffer.mtext), unsafe.Pointer(&message[0]), msgSize)
+	if msgSize > 0 {
+		C.memcpy(unsafe.Pointer(&buffer.mtext), unsafe.Pointer(&message[0]), msgSize)
+	}
 
 	_, err := C.msgsnd(C.int(key), unsafe.Pointer(buffer), msgSize, C.int(flags))
 

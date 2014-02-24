@@ -190,6 +190,34 @@ func Test_SendingBinary(t *testing.T) {
 	}
 }
 
+func Test_SendingEmpty(t *testing.T) {
+	id := GetTestQueueId(t)
+
+	wired := []byte{}
+
+	buffer, err := allocateBuffer(len(wired))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = msgsnd(id, wired, buffer, len(wired), 1, 0)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	msg, _, err := msgrcv(id, 0, buffer, len(wired), 0)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if bytes.Compare(msg, wired) != 0 {
+		t.Errorf("expected %q, got: %q", wired, msg)
+	}
+}
+
 func Test_SendingUTF8(t *testing.T) {
 	id := GetTestQueueId(t)
 
