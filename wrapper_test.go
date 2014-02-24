@@ -49,7 +49,7 @@ func Test_SendAndReceiveMessage(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = msgsnd(id, "hello world", buffer, len(wired), 1, 0)
+	err = msgsnd(id, []byte("hello world"), buffer, len(wired), 1, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -61,7 +61,7 @@ func Test_SendAndReceiveMessage(t *testing.T) {
 		t.Error(err)
 	}
 
-	if msg != "hello world" {
+	if string(msg) != "hello world" {
 		t.Error("expected hello world, got: ", msg)
 	}
 }
@@ -88,7 +88,7 @@ func Test_Async(t *testing.T) {
 			return
 		}
 
-		if msg != wired {
+		if string(msg) != wired {
 			t.Errorf("expected %s, got: %s", wired, msg)
 		}
 
@@ -101,7 +101,7 @@ func Test_Async(t *testing.T) {
 		t.Error(err)
 	}
 
-	msgsnd(id, wired, buffer, len(wired), 1, 0)
+	msgsnd(id, []byte(wired), buffer, len(wired), 1, 0)
 	wg.Wait()
 }
 
@@ -131,7 +131,7 @@ func Test_MassAsync(t *testing.T) {
 				return
 			}
 
-			if msg != wired {
+			if string(msg) != wired {
 				t.Errorf("expected %s, got: %s\n", wired, msg)
 			}
 		}
@@ -147,7 +147,7 @@ func Test_MassAsync(t *testing.T) {
 		}
 
 		for i := 0; i < N; i++ {
-			err := msgsnd(id, wired, buffer, len(wired), 1, 0)
+			err := msgsnd(id, []byte(wired), buffer, len(wired), 1, 0)
 
 			if err != nil {
 				t.Error(err)
@@ -172,7 +172,7 @@ func Test_SendingUTF8(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = msgsnd(id, wired, buffer, len(wired), 1, 0)
+	err = msgsnd(id, []byte(wired), buffer, len(wired), 1, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -184,7 +184,7 @@ func Test_SendingUTF8(t *testing.T) {
 		t.Error(err)
 	}
 
-	if msg != wired {
+	if string(msg) != wired {
 		t.Errorf("expected %s, got: %s", wired, msg)
 	}
 }
@@ -200,7 +200,7 @@ func Test_ReceiveBounds(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = msgsnd(id, wired, buffer, len(wired), 1, 0)
+	err = msgsnd(id, []byte(wired), buffer, len(wired), 1, 0)
 
 	if err != nil {
 		t.Error(err)
@@ -212,7 +212,7 @@ func Test_ReceiveBounds(t *testing.T) {
 		t.Error(err)
 	}
 
-	if msg != "123456789" {
+	if string(msg) != "123456789" {
 		t.Errorf("expected %s, got: %s", wired, msg)
 	}
 }
@@ -220,7 +220,7 @@ func Test_ReceiveBounds(t *testing.T) {
 func Test_GivesE2BIGOnSmallBufferSize(t *testing.T) {
 	id := GetTestQueueId(t)
 
-	wired := "123456789"
+	wired := []byte("123456789")
 
 	buffer, err := allocateBuffer(len(wired) - 1)
 
@@ -256,7 +256,7 @@ func Test_GivesE2BIGOnSmallBufferSize(t *testing.T) {
 func Test_RemoveQueue(t *testing.T) {
 	id := GetTestQueueId(t)
 
-	wired := "something"
+	wired := []byte("something")
 
 	buffer, err := allocateBuffer(len(wired))
 
@@ -276,7 +276,7 @@ func Test_RemoveQueue(t *testing.T) {
 func Test_ErrorsOnBufferSmallerThanMsg(t *testing.T) {
 	id := GetTestQueueId(t)
 
-	wired := "something"
+	wired := []byte("something")
 
 	buffer, err := allocateBuffer(len(wired) - 1)
 

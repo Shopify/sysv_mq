@@ -44,12 +44,12 @@ const (
 
 // msgop(2)
 // int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg)
-func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int, flags int) error {
+func msgsnd(key int, message []byte, buffer *C.sysv_msg, maxSize int, mtype int, flags int) error {
 	if len(message) > maxSize {
 		return errors.New(MessageBiggerThanBuffer)
 	}
 
-	cString := C.CString(message)
+	cString := C.CString(string(message))
 
 	if cString == nil {
 		return errors.New(MemoryAllocationError)
@@ -69,11 +69,11 @@ func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int,
 
 // msgop(2)
 // ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
-func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (string, int, error) {
+func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) ([]byte, int, error) {
 	length, err := C.msgrcv(C.int(key), unsafe.Pointer(buffer), C.size_t(strSize), C.long(mtype), C.int(flags))
 
 	if err != nil {
-		return "", 0, err
+		return nil, 0, err
 	}
 
 	// Obtain the address of buffer->mtext in C-land, because Go doesn't support
@@ -83,7 +83,7 @@ func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (str
 	// Obtain the message type from the buffer struct
 	mtypeReceived := int(buffer.mtype)
 
-	return C.GoStringN(cs, C.int(length)), mtypeReceived, nil
+	return []byte(C.GoStringN(cs, C.int(length))), mtypeReceived, nil
 }
 
 // msgget(2)
