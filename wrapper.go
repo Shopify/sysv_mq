@@ -28,7 +28,6 @@ get_string(sysv_msg *buf) {
 import "C"
 import "unsafe"
 import "errors"
-import "reflect"
 
 const (
 	IPC_CREAT  = C.IPC_CREAT
@@ -53,8 +52,7 @@ func msgsnd(key int, message []byte, buffer *C.sysv_msg, maxSize int, mtype int,
 	msgSize := C.size_t(len(message))
 
 	buffer.mtype = C.long(mtype)
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&message))
-	C.memcpy(unsafe.Pointer(&buffer.mtext), unsafe.Pointer(header.Data), msgSize)
+	C.memcpy(unsafe.Pointer(&buffer.mtext), unsafe.Pointer(&message[0]), msgSize)
 
 	_, err := C.msgsnd(C.int(key), unsafe.Pointer(buffer), msgSize, C.int(flags))
 
