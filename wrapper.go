@@ -69,18 +69,21 @@ func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int,
 
 // msgop(2)
 // ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
-func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (string, error) {
+func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (string, int, error) {
 	length, err := C.msgrcv(C.int(key), unsafe.Pointer(buffer), C.size_t(strSize), C.long(mtype), C.int(flags))
 
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
 	// Obtain the address of buffer->mtext in C-land, because Go doesn't support
 	// zero-length arrays
 	cs := C.get_string(buffer)
 
-	return C.GoStringN(cs, C.int(length)), nil
+	// Obtain the message priority from the buffer struct
+	priority := int(buffer.mtype)
+
+	return C.GoStringN(cs, C.int(length)), priority, nil
 }
 
 // msgget(2)

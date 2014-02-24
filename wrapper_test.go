@@ -55,7 +55,7 @@ func Test_SendAndReceiveMessage(t *testing.T) {
 		t.Error(err)
 	}
 
-	msg, err := msgrcv(id, 0, buffer, len(wired), 0)
+	msg, _, err := msgrcv(id, 0, buffer, len(wired), 0)
 
 	if err != nil {
 		t.Error(err)
@@ -81,7 +81,7 @@ func Test_Async(t *testing.T) {
 			t.Error(err)
 		}
 
-		msg, err := msgrcv(id, 0, buffer, len(wired), 0)
+		msg, _, err := msgrcv(id, 0, buffer, len(wired), 0)
 
 		if err != nil {
 			t.Error(err)
@@ -124,7 +124,7 @@ func Test_MassAsync(t *testing.T) {
 		}
 
 		for i := 0; i < N; i++ {
-			msg, err := msgrcv(id, 0, buffer, len(wired), 0)
+			msg, _, err := msgrcv(id, 0, buffer, len(wired), 0)
 
 			if err != nil {
 				t.Error(err)
@@ -178,7 +178,7 @@ func Test_SendingUTF8(t *testing.T) {
 		t.Error(err)
 	}
 
-	msg, err := msgrcv(id, 0, buffer, len(wired), 0)
+	msg, _, err := msgrcv(id, 0, buffer, len(wired), 0)
 
 	if err != nil {
 		t.Error(err)
@@ -206,7 +206,7 @@ func Test_ReceiveBounds(t *testing.T) {
 		t.Error(err)
 	}
 
-	msg, err := msgrcv(id, 0, buffer, len(wired), 0)
+	msg, _, err := msgrcv(id, 0, buffer, len(wired), 0)
 
 	if err != nil {
 		t.Error(err)
@@ -234,7 +234,7 @@ func Test_GivesE2BIGOnSmallBufferSize(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, err = msgrcv(id, 0, buffer, len(wired)-1, 0)
+	_, _, err = msgrcv(id, 0, buffer, len(wired)-1, 0)
 
 	if err == nil {
 		t.Error(err)
@@ -246,7 +246,7 @@ func Test_GivesE2BIGOnSmallBufferSize(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, err = msgrcv(id, 0, buffer, len(wired), 0)
+	_, _, err = msgrcv(id, 0, buffer, len(wired), 0)
 
 	if err != nil {
 		t.Error(err)
