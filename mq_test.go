@@ -56,7 +56,7 @@ func Test_SendMessage(t *testing.T) {
 		t.Error(err)
 	}
 
-	response, priority, err := mq.ReceiveWithPriority(0)
+	response, mtype, err := mq.ReceiveWithType(0)
 
 	if err != nil {
 		t.Error(err)
@@ -66,8 +66,8 @@ func Test_SendMessage(t *testing.T) {
 		t.Error("expected %s, got: %s", wired, response)
 	}
 
-	if 4 != priority {
-		t.Error("expected priority 4, got: %d", wired, priority)
+	if 4 != mtype {
+		t.Error("expected mtype 4, got: %d", mtype)
 	}
 }
 

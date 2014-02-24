@@ -78,13 +78,13 @@ func (mq *MessageQueue) Send(message string, msgType int) error {
 // Receive a string message with the type specified by the integer argument.
 // Pass 0 to retrieve the message at the top of the queue, regardless of type.
 func (mq *MessageQueue) Receive(msgType int) (string, error) {
-	msg, _, err := mq.ReceiveWithPriority(msgType)
+	msg, _, err := mq.ReceiveWithType(msgType)
 	return msg, err
 }
 
 // Receive a string message with the type specified by the integer argument.
 // Pass 0 to retrieve the message at the top of the queue, regardless of type.
-func (mq *MessageQueue) ReceiveWithPriority(msgType int) (string, int, error) {
+func (mq *MessageQueue) ReceiveWithType(msgType int) (string, int, error) {
 	mq.buffer.mtype = C.long(msgType)
 	return msgrcv(mq.id, msgType, mq.buffer, mq.config.MaxSize, 0)
 }

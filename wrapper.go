@@ -80,10 +80,10 @@ func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (str
 	// zero-length arrays
 	cs := C.get_string(buffer)
 
-	// Obtain the message priority from the buffer struct
-	priority := int(buffer.mtype)
+	// Obtain the message type from the buffer struct
+	mtypeReceived := int(buffer.mtype)
 
-	return C.GoStringN(cs, C.int(length)), priority, nil
+	return C.GoStringN(cs, C.int(length)), mtypeReceived, nil
 }
 
 // msgget(2)
