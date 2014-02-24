@@ -76,14 +76,7 @@ func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) ([]b
 		return nil, 0, err
 	}
 
-	// Obtain the address of buffer->mtext in C-land, because Go doesn't support
-	// zero-length arrays
-	cs := C.get_string(buffer)
-
-	// Obtain the message type from the buffer struct
-	mtypeReceived := int(buffer.mtype)
-
-	return []byte(C.GoStringN(cs, C.int(length))), mtypeReceived, nil
+	return C.GoBytes(unsafe.Pointer(&buffer.mtext), C.int(length)), int(buffer.mtype), nil
 }
 
 // msgget(2)
