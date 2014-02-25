@@ -55,6 +55,7 @@ type QueueConfig struct {
 // NewMessageQueue returns an instance of the message queue given a QueueConfig.
 func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	mq := new(MessageQueue)
+	mq.id = -1
 	mq.config = config
 	err := mq.connect()
 
@@ -137,10 +138,10 @@ func (mq *MessageQueue) Size() (uint64, error) {
 // Frees up the resources associated with the message queue,
 // but it will leave the message wueue itself in place.
 func (mq *MessageQueue) Close() {
-	if mq.id != 0 {
-		mq.id = 0
-		mq.config = nil
+	if mq.id > -1 {
 		freeBuffer(mq.buffer)
+		mq.id = -1
+		mq.config = nil
 	}
 }
 
