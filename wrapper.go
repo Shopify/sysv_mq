@@ -15,15 +15,6 @@ typedef struct _sysv_msg {
   long mtype;
   char mtext[];
 } sysv_msg;
-
-// The reason for this function is that Go won't allow assigning without this
-// type-cast. Otherwise it'll be interpreted as the zero-array type (char[]).
-// So we dig down to C to get the right type, and Go will then interpret it
-// correctly.
-char*
-get_string(sysv_msg *buf) {
-  return (char*)&buf->mtext;
-}
 */
 import "C"
 import "unsafe"
@@ -44,23 +35,17 @@ const (
 
 // msgop(2)
 // int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg)
-func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int, flags int) error {
+func msgsnd(key int, message []byte, buffer *C.sysv_msg, maxSize int, mtype int, flags int) error {
 	if len(message) > maxSize {
 		return errors.New(MessageBiggerThanBuffer)
 	}
 
-	cString := C.CString(message)
-
-	if cString == nil {
-		return errors.New(MemoryAllocationError)
-	}
-
-	defer C.free(unsafe.Pointer(cString))
-
 	msgSize := C.size_t(len(message))
 
 	buffer.mtype = C.long(mtype)
-	C.strncpy(C.get_string(buffer), cString, msgSize)
+	if msgSize > 0 {
+		C.memcpy(unsafe.Pointer(&buffer.mtext), unsafe.Pointer(&message[0]), msgSize)
+	}
 
 	_, err := C.msgsnd(C.int(key), unsafe.Pointer(buffer), msgSize, C.int(flags))
 
@@ -69,21 +54,14 @@ func msgsnd(key int, message string, buffer *C.sysv_msg, maxSize int, mtype int,
 
 // msgop(2)
 // ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
-func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) (string, int, error) {
+func msgrcv(key int, mtype int, buffer *C.sysv_msg, strSize int, flags int) ([]byte, int, error) {
 	length, err := C.msgrcv(C.int(key), unsafe.Pointer(buffer), C.size_t(strSize), C.long(mtype), C.int(flags))
 
 	if err != nil {
-		return "", 0, err
+		return nil, 0, err
 	}
 
-	// Obtain the address of buffer->mtext in C-land, because Go doesn't support
-	// zero-length arrays
-	cs := C.get_string(buffer)
-
-	// Obtain the message type from the buffer struct
-	mtypeReceived := int(buffer.mtype)
-
-	return C.GoStringN(cs, C.int(length)), mtypeReceived, nil
+	return C.GoBytes(unsafe.Pointer(&buffer.mtext), C.int(length)), int(buffer.mtype), nil
 }
 
 // msgget(2)
@@ -139,6 +117,10 @@ func allocateBuffer(strSize int) (*C.sysv_msg, error) {
 	}
 
 	return buffer, nil
+}
+
+func freeBuffer(buffer *C.sysv_msg) {
+	C.free(unsafe.Pointer(buffer))
 }
 
 // Wraps msgctl(key, IPC_STAT).
