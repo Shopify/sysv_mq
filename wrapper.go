@@ -15,15 +15,6 @@ typedef struct _sysv_msg {
   long mtype;
   char mtext[];
 } sysv_msg;
-
-// The reason for this function is that Go won't allow assigning without this
-// type-cast. Otherwise it'll be interpreted as the zero-array type (char[]).
-// So we dig down to C to get the right type, and Go will then interpret it
-// correctly.
-char*
-get_string(sysv_msg *buf) {
-  return (char*)&buf->mtext;
-}
 */
 import "C"
 import "unsafe"
