@@ -9,6 +9,7 @@ typedef struct _sysv_msg {
 */
 import "C"
 import "errors"
+import "runtime"
 
 // Represents the message queue
 type MessageQueue struct {
@@ -66,6 +67,9 @@ func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	if err != nil {
 		return mq, errors.New("Error allocating buffer for queue: " + err.Error())
 	}
+	runtime.SetFinalizer(mq, func(mq *MessageQueue) {
+		mq.Close()
+	})
 
 	return mq, err
 }
@@ -116,6 +120,15 @@ func (mq *MessageQueue) Count() (uint64, error) {
 func (mq *MessageQueue) Size() (uint64, error) {
 	info, err := mq.Stat()
 	return info.Cbytes, err
+}
+
+// Frees up the resources associated with the message queue,
+// but it will leave the message wueue itself in place.
+func (mq *MessageQueue) Close() {
+	if mq.id != 0 {
+		mq.id = 0
+		mq.config = nil
+	}
 }
 
 func (mq *MessageQueue) connect() (err error) {

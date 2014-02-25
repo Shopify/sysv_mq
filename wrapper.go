@@ -128,6 +128,10 @@ func allocateBuffer(strSize int) (*C.sysv_msg, error) {
 	return buffer, nil
 }
 
+func freeBuffer(buffer *C.sysv_msg) {
+	C.free(unsafe.Pointer(buffer))
+}
+
 // Wraps msgctl(key, IPC_STAT).
 func ipcStat(key int) (*QueueStats, error) {
 	info, err := msgctl(key, IPC_STAT)
