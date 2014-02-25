@@ -75,34 +75,46 @@ func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 }
 
 // Sends a []byte message to the queue of the type passed as the second argument.
-func (mq *MessageQueue) SendBytes(message []byte, msgType int) error {
-	return msgsnd(mq.id, message, mq.buffer, mq.config.MaxSize, msgType, 0)
+func (mq *MessageQueue) SendBytes(message []byte, msgType int, flags int) error {
+	return msgsnd(mq.id, message, mq.buffer, mq.config.MaxSize, msgType, flags)
 }
 
 // Sends a string message to the queue of the type passed as the second argument.
-func (mq *MessageQueue) Send(message string, msgType int) error {
-	return mq.SendBytes([]byte(message), msgType)
+func (mq *MessageQueue) SendString(message string, msgType int, flags int) error {
+	return mq.SendBytes([]byte(message), msgType, flags)
 }
 
-// Receive a []byte] message with the type specified by the integer argument.
+// Receive a []byte message with the type specified by the integer argument.
 // Pass 0 to retrieve the message at the top of the queue, regardless of type.
-func (mq *MessageQueue) ReceiveBytes(msgType int) ([]byte, int, error) {
+func (mq *MessageQueue) ReceiveBytes(msgType int, flags int) ([]byte, int, error) {
 	mq.buffer.mtype = C.long(msgType)
-	return msgrcv(mq.id, msgType, mq.buffer, mq.config.MaxSize, 0)
+	return msgrcv(mq.id, msgType, mq.buffer, mq.config.MaxSize, flags)
 }
 
+// Receive a string message with the type specified by the integer argument.
+// Pass 0 to retrieve the message at the top of the queue, regardless of type.
+func (mq *MessageQueue) ReceiveString(msgType int, flags int) (string, int, error) {
+	mq.buffer.mtype = C.long(msgType)
+	bytes, mtype, err := mq.ReceiveBytes(msgType, flags)
+	if err != nil {
+		return "", 0, err
+	} else {
+		return string(bytes), mtype, nil
+	}
+}
+
+// DEPRECATED
+// Sends a string message to the queue of the type passed as the second argument.
+func (mq *MessageQueue) Send(message string, msgType int) error {
+	return mq.SendString(message, msgType, 0)
+}
+
+// DEPRECATED
 // Receive a string message with the type specified by the integer argument.
 // Pass 0 to retrieve the message at the top of the queue, regardless of type.
 func (mq *MessageQueue) Receive(msgType int) (string, error) {
-	msg, _, err := mq.ReceiveBytes(msgType)
-	return string(msg), err
-}
-
-// Receive a string message with the type specified by the integer argument.
-// Pass 0 to retrieve the message at the top of the queue, regardless of type.
-func (mq *MessageQueue) ReceiveWithType(msgType int) (string, int, error) {
-	msg, mtype, err := mq.ReceiveBytes(msgType)
-	return string(msg), mtype, err
+	str, _, err := mq.ReceiveString(msgType, 0)
+	return str, err
 }
 
 // Get statistics about the message queue.

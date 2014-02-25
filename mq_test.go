@@ -31,16 +31,16 @@ func ExampleMessageQueue() {
 		fmt.Println(err)
 	}
 
-	err = mq.Send("Hello World", 1)
+	err = mq.SendBytes([]byte("Hello World"), 1, IPC_NOWAIT)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	response, err := mq.Receive(0)
+	response, _, err := mq.ReceiveBytes(0, IPC_NOWAIT)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(response)
+	fmt.Println(string(response))
 	// Output:
 	// Hello World
 }
@@ -50,19 +50,23 @@ func Test_SendMessage(t *testing.T) {
 
 	wired := "Narwhals and ice cream"
 
-	err := mq.Send(wired, 4)
+	err := mq.SendBytes([]byte(wired), 4, IPC_NOWAIT)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	response, mtype, err := mq.ReceiveWithType(0)
+	response, mtype, err := mq.ReceiveBytes(0, IPC_NOWAIT)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	if wired != response {
+	if mtype != 4 {
+		t.Error("expected mtype 4, got: %d", mtype)
+	}
+
+	if wired != string(response) {
 		t.Error("expected %s, got: %s", wired, response)
 	}
 
@@ -86,7 +90,7 @@ func Test_CountMessages(t *testing.T) {
 		t.Error(messages)
 	}
 
-	if err := mq.Send(wired, 1); err != nil {
+	if err := mq.SendString(wired, 1, IPC_NOWAIT); err != nil {
 		t.Error(err)
 	}
 
@@ -100,7 +104,7 @@ func Test_CountMessages(t *testing.T) {
 		t.Error(messages)
 	}
 
-	response, err := mq.Receive(0)
+	response, _, err := mq.ReceiveString(0, IPC_NOWAIT)
 
 	if err != nil {
 		t.Error(err)
@@ -136,7 +140,7 @@ func Test_QueueSize(t *testing.T) {
 		t.Error("expected empty queue")
 	}
 
-	if err = mq.Send(wired, 1); err != nil {
+	if err = mq.SendString(wired, 1, 0); err != nil {
 		t.Error(err)
 	}
 
@@ -150,7 +154,7 @@ func Test_QueueSize(t *testing.T) {
 		t.Errorf("expected queue of len %d queue, got: %d\n", len(wired), size)
 	}
 
-	response, err := mq.Receive(0)
+	response, _, err := mq.ReceiveString(0, 0)
 
 	if err != nil {
 		t.Error(err)
