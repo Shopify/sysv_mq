@@ -125,6 +125,13 @@ func Test_CountMessages(t *testing.T) {
 	}
 }
 
+func Test_QueueClose(t *testing.T) {
+	mq := SampleMessageQueue(t)
+	mq.Close()
+	mq.Close()
+	mq.Close()
+}
+
 func Test_QueueSize(t *testing.T) {
 	mq := SampleMessageQueue(t)
 

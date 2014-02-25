@@ -140,6 +140,7 @@ func (mq *MessageQueue) Close() {
 	if mq.id != 0 {
 		mq.id = 0
 		mq.config = nil
+		freeBuffer(mq.buffer)
 	}
 }
 
