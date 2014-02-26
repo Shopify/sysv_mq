@@ -36,31 +36,33 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// Send a message to the queue
-	err = mq.Send("Hello World", 1)
+	// Send a message to the queue, with message type 1, without flags.
+	err = mq.SendString("Hello World", 1, 0)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	// Receive a message from the queue, 0 gives you the top message regardless of
 	// message type passed to send().
-	response, err := mq.Receive(0)
+	response, mtype, err := mq.ReceiveString(0)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(response)
+	fmt.Printf("[%d] %s", mtype, response)
 	// Output:
-	// Hello World
+	// [1] Hello World
 }
 ```
 
 ## Caveats
 
-* `Send()` and `Receive()` are (by default) blocking. Right now it doesn't
-  support non-blocking calls (it's supported in the C -> Go wrapper,
-  `wrapper.go`, but not currently exposed in the public interface.)
-* `Send()`, `Receive()` and `NewMessageQueue()` all do syscalls, and these could
-  be interrupted by a signal (very common if you do a blocking `Receive()`). The
+* The underlying SysV API works with binary data. You can send any kind of byte slice using
+  `SendBytes()` and `ReceiveBytes()`. `SendString()` and  `ReceiveString()` are a simple
+  wrapper around the byteslice functions for convenience, and will use UTF-8 encoding.
+* The send and receive methods are blocking by default. You can pass the `sysv_mq.IPC_NOWAIT` 
+  flag to make them return immediately.
+* `SendBytes()`, `ReceiveBytes()` and `NewMessageQueue()` all do syscalls, and these could
+  be interrupted by a signal (very common if you do a blocking `ReceiveBytes()`). The
   error will be `EAGAIN` in that case. It's not wrapped here, because `EAGAIN`
   is also the error if the call would block or the queue is full. Consult the
   manual for more information.
