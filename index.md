@@ -1,3 +1,7 @@
+---
+layout: index
+---
+
 # Go wrapper for SysV Message Queues
 
 [![Build Status](https://travis-ci.org/Shopify/sysv_mq.png)](https://travis-ci.org/Shopify/sysv_mq)
