@@ -2,8 +2,6 @@
 layout: index
 ---
 
-# Go wrapper for SysV Message Queues
-
 [![Build Status](https://travis-ci.org/Shopify/sysv_mq.png)](https://travis-ci.org/Shopify/sysv_mq)
 
 sysv_mq is a Go wrapper for [SysV Message Queues](). It's important you
@@ -13,50 +11,47 @@ wrapper, and will not hide any errors from you.
 
 Documentation for the public API can be viewed at [Godoc][godoc].
 
-sysv_mq is tested on Linux and OS X. To run the tests run `make test`. This
-makes sure that any messages queues currently on your system are deleted before
-running the tests.
+sysv_mq is tested on Linux and OS X. To run the tests run `make test`. This makes sure that any messages queues currently on your system are deleted before running the tests.
 
-## Example
+### Example
 
 Example which sends a message to the queue with key: `0xDEADBEEF` (or creates it
 if it doesn't exist).
 
-```go
-package main
+	go
+	package main
 
-import (
-	"fmt"
-	"github.com/Shopify/sysv_mq"
-)
+	import (
+		"fmt"
+		"github.com/Shopify/sysv_mq"
+	)
 
-func main() {
-	mq, err := sysv_mq.NewMessageQueue(&sysv_mq.QueueConfig{
-		Key:     0xDEADBEEF,               // SysV IPC key
-		MaxSize: 1024,                     // Max size of a message
-		Mode:    sysv_mq.IPC_CREAT | 0600, // Creates if it doesn't exist, 0600 permissions
-	})
-	if err != nil {
-		fmt.Println(err)
+	func main() {
+		mq, err := sysv_mq.NewMessageQueue(&sysv_mq.QueueConfig{
+			Key:     0xDEADBEEF,               // SysV IPC key
+			MaxSize: 1024,                     // Max size of a message
+			Mode:    sysv_mq.IPC_CREAT | 0600, // Creates if it doesn't exist, 0600 permissions
+		})
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// Send a message to the queue, with message type 1, without flags.
+		err = mq.SendString("Hello World", 1, 0)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// Receive a message from the queue, 0 gives you the top message regardless of
+		// message type passed to send().
+		response, mtype, err := mq.ReceiveString(0)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("[%d] %s", mtype, response)
+		// Output:
+		// [1] Hello World
 	}
-
-	// Send a message to the queue, with message type 1, without flags.
-	err = mq.SendString("Hello World", 1, 0)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Receive a message from the queue, 0 gives you the top message regardless of
-	// message type passed to send().
-	response, mtype, err := mq.ReceiveString(0)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("[%d] %s", mtype, response)
-	// Output:
-	// [1] Hello World
-}
-```
 
 ## Caveats
 
@@ -75,3 +70,6 @@ func main() {
 [rcvsnd]: http://man7.org/linux/man-pages/man2/msgrcv.2.html
 [godoc]: http://godoc.org/github.com/Shopify/sysv_mq
 
+## License
+
+Copyright (c) 2013 Shopify. Released under the [MIT-LICENSE](http://opensource.org/licenses/MIT).
