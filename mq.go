@@ -20,9 +20,9 @@ type MessageQueue struct {
 
 // Wraps the C structure "struct msgid_ds" (see msgctl(2))
 type QueueStats struct {
-	Perm   QueuePermissions
-	Stime  int64  // signed long, according to bits/types.h
-	Rtime  int64  //
+	Perm  QueuePermissions
+	Stime int64 // signed long, according to bits/types.h
+	// Rtime  int64  // https://github.com/Shopify/sysv_mq/issues/10
 	Ctime  int64  //
 	Cbytes uint64 // unsigned long, according to msgctl(2)
 	Qnum   uint64 // unsigned long, according to bits/msq.h

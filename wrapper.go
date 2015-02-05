@@ -139,9 +139,9 @@ func ipcStat(key int) (*QueueStats, error) {
 	}
 
 	stat := &QueueStats{
-		Perm:   perm,
-		Stime:  int64(info.msg_stime),
-		Rtime:  int64(info.msg_rtime),
+		Perm:  perm,
+		Stime: int64(info.msg_stime),
+		// Rtime:  int64(info.msg_rtime), // https://github.com/Shopify/sysv_mq/issues/10
 		Ctime:  int64(info.msg_ctime),
 		Cbytes: cbytesFromStruct(info),
 		Qnum:   uint64(info.msg_qnum),
