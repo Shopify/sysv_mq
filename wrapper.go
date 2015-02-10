@@ -123,6 +123,12 @@ func freeBuffer(buffer *C.sysv_msg) {
 	C.free(unsafe.Pointer(buffer))
 }
 
+// Wraps msgctl(key, IPC_RMID).
+func ipcDestroy(key int) error {
+	_, err := msgctl(key, IPC_RMID)
+	return err
+}
+
 // Wraps msgctl(key, IPC_STAT).
 func ipcStat(key int) (*QueueStats, error) {
 	info, err := msgctl(key, IPC_STAT)

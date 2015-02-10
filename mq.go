@@ -60,13 +60,13 @@ func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	err := mq.connect()
 
 	if err != nil {
-		return mq, errors.New("Error connecting to queue: " + err.Error())
+		return mq, err
 	}
 
 	mq.buffer, err = allocateBuffer(mq.config.MaxSize)
 
 	if err != nil {
-		return mq, errors.New("Error allocating buffer for queue: " + err.Error())
+		return mq, err
 	}
 	runtime.SetFinalizer(mq, func(mq *MessageQueue) {
 		mq.Close()

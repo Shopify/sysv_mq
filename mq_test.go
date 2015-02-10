@@ -2,6 +2,7 @@ package sysv_mq
 
 import (
 	"fmt"
+	"syscall"
 	"testing"
 )
 
@@ -130,6 +131,29 @@ func Test_QueueClose(t *testing.T) {
 	mq.Close()
 	mq.Close()
 	mq.Close()
+}
+
+func TestQueueDestroy(t *testing.T) {
+	mq := SampleMessageQueue(t)
+
+	if mq2, err := NewMessageQueue(&QueueConfig{Key: SysVIPCKey}); err != nil {
+		t.Fatal(err)
+	} else {
+		mq2.Close()
+	}
+
+	mq.Destroy()
+
+	mq3, err := NewMessageQueue(&QueueConfig{Key: SysVIPCKey})
+	switch err {
+	case nil:
+		mq3.Close()
+		t.Fatal("Expected opening of MQ to fail after it has been destroyed, but it succeeded.")
+	case syscall.ENOENT:
+		t.Log("Failed to open MQ as expected")
+	default:
+		t.Fatal(err)
+	}
 }
 
 func Test_QueueSize(t *testing.T) {
