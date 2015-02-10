@@ -104,23 +104,15 @@ func (mq *MessageQueue) ReceiveString(msgType int, flags int) (string, int, erro
 	}
 }
 
-// DEPRECATED
-// Sends a string message to the queue of the type passed as the second argument.
-func (mq *MessageQueue) Send(message string, msgType int) error {
-	return mq.SendString(message, msgType, 0)
-}
-
-// DEPRECATED
-// Receive a string message with the type specified by the integer argument.
-// Pass 0 to retrieve the message at the top of the queue, regardless of type.
-func (mq *MessageQueue) Receive(msgType int) (string, error) {
-	str, _, err := mq.ReceiveString(msgType, 0)
-	return str, err
-}
-
 // Get statistics about the message queue.
 func (mq *MessageQueue) Stat() (*QueueStats, error) {
 	return ipcStat(mq.id)
+}
+
+// Get statistics about the message queue.
+func (mq *MessageQueue) Destroy() error {
+	defer mq.Close()
+	return ipcDestroy(mq.id)
 }
 
 // Number of messages currently in the queue.
