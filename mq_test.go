@@ -133,7 +133,7 @@ func Test_QueueClose(t *testing.T) {
 	mq.Close()
 }
 
-func TestQueueDestroy(t *testing.T) {
+func Test_QueueDestroy(t *testing.T) {
 	mq := SampleMessageQueue(t)
 
 	if mq2, err := NewMessageQueue(&QueueConfig{Key: SysVIPCKey}); err != nil {
@@ -150,7 +150,7 @@ func TestQueueDestroy(t *testing.T) {
 		mq3.Close()
 		t.Fatal("Expected opening of MQ to fail after it has been destroyed, but it succeeded.")
 	case syscall.ENOENT:
-		t.Log("Failed to open MQ as expected")
+		t.Log("SUCCESS: failed to open MQ as expected")
 	default:
 		t.Fatal(err)
 	}
