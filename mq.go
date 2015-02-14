@@ -42,9 +42,8 @@ type QueuePermissions struct {
 
 // QueueConfig is used to configure an instance of the message queue.
 type QueueConfig struct {
-	Mode     int // The mode of the message queue, e.g. 0600
-	SendType int // Type to send messages as
-	MaxSize  int // Size of the largest message to retrieve or send, allocates a buffer of this size
+	Mode    int // The mode of the message queue, e.g. 0600
+	MaxSize int // Size of the largest message to retrieve or send, allocates a buffer of this size
 
 	Key int // SysV IPC key
 
