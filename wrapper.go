@@ -13,7 +13,7 @@ package sysv_mq
 
 typedef struct _sysv_msg {
   long mtype;
-  char mtext[];
+  char mtext[1];
 } sysv_msg;
 */
 import "C"
@@ -106,9 +106,11 @@ func msgctl(key int, cmd int) (*C.struct_msqid_ds, error) {
 }
 
 // The buffer is malloced, and not handled by Go, because SysV MQs do
-// zero-length arrays that Go does not support
+// runtime-length inline arrays that Go does not support without a bunch of reflection
 func allocateBuffer(strSize int) (*C.sysv_msg, error) {
-	// The +1 here is because strcpy in msgsnd copies the terminating null byte
+	// you can't reliably take the size of C structs from go (yay platform-dependent padding/alignment
+	// differences) so we manually construct what should basically just be sizeof(C.sysv_msg) + strSize.
+	// Fortunately there's only one other member besides the variable-length buffer, so it's not too bad.
 	bufferSize := C.size_t(strSize) + C.size_t(unsafe.Sizeof(C.long(1)))
 	buffer := (*C.sysv_msg)(C.malloc(bufferSize))
 
