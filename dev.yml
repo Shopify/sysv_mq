@@ -1,0 +1,10 @@
+name: sysv_mq
+
+up:
+  - go: 1.6.2
+
+commands:
+  test:
+    run: go test ./...
+    desc: 'run unit tests'
+
