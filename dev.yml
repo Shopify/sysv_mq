@@ -1,4 +1,4 @@
-name: sysv_mq
+name: sysv-mq
 
 up:
   - go: 1.6.2
