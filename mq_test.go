@@ -64,15 +64,15 @@ func Test_SendMessage(t *testing.T) {
 	}
 
 	if mtype != 4 {
-		t.Error("expected mtype 4, got: %d", mtype)
+		t.Errorf("expected mtype 4, got: %d", mtype)
 	}
 
 	if wired != string(response) {
-		t.Error("expected %s, got: %s", wired, response)
+		t.Errorf("expected %s, got: %s", wired, response)
 	}
 
 	if 4 != mtype {
-		t.Error("expected mtype 4, got: %d", mtype)
+		t.Errorf("expected mtype 4, got: %d", mtype)
 	}
 }
 
@@ -112,7 +112,7 @@ func Test_CountMessages(t *testing.T) {
 	}
 
 	if wired != response {
-		t.Error("expected %s, got: %s", wired, response)
+		t.Errorf("expected %s, got: %s", wired, response)
 	}
 
 	messages, err = mq.Count()
@@ -192,7 +192,7 @@ func Test_QueueSize(t *testing.T) {
 	}
 
 	if wired != response {
-		t.Error("expected %s, got: %s", wired, response)
+		t.Errorf("expected %s, got: %s", wired, response)
 	}
 
 	size, err = mq.Size()
