@@ -103,12 +103,12 @@ func (mq *MessageQueue) ReceiveString(msgType int, flags int) (string, int, erro
 	}
 }
 
-// Get statistics about the message queue.
+// Stat gets statistics about the message queue.
 func (mq *MessageQueue) Stat() (*QueueStats, error) {
 	return ipcStat(mq.id)
 }
 
-// Get statistics about the message queue.
+// Destroy gets statistics about the message queue.
 func (mq *MessageQueue) Destroy() error {
 	defer mq.Close()
 	return ipcDestroy(mq.id)
