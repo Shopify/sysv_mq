@@ -8,14 +8,17 @@ typedef struct _sysv_msg {
 } sysv_msg;
 */
 import "C"
-import "errors"
-import "runtime"
+import (
+	"errors"
+	"runtime"
+)
 
 // Represents the message queue
 type MessageQueue struct {
 	id     int
 	config *QueueConfig
 	buffer *C.sysv_msg
+	stats  *QueueStats
 }
 
 // Wraps the C structure "struct msgid_ds" (see msgctl(2))
@@ -51,6 +54,14 @@ type QueueConfig struct {
 	ProjId int    // ProjId for ftok to generate a SysV IPC key if Key is not set
 }
 
+// QueueSet is used to modify an instance of the message queue.
+type QueueSet struct {
+	Uid    uint32 // unsigned int32, according to bits/typesizes.h
+	Gid    uint32 //
+	Mode   uint16 // unsigned short, according to msgctl(2)
+	Qbytes uint64 // unsigned long, according to bits/msg.h
+}
+
 // NewMessageQueue returns an instance of the message queue given a QueueConfig.
 func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	mq := new(MessageQueue)
@@ -67,6 +78,13 @@ func NewMessageQueue(config *QueueConfig) (*MessageQueue, error) {
 	if err != nil {
 		return mq, err
 	}
+
+	mq.stats, err = mq.Stat()
+
+	if err != nil {
+		return mq, err
+	}
+
 	runtime.SetFinalizer(mq, func(mq *MessageQueue) {
 		mq.Close()
 	})
@@ -136,6 +154,7 @@ func (mq *MessageQueue) Close() {
 	}
 }
 
+// connect the the message queue
 func (mq *MessageQueue) connect() (err error) {
 	if mq.config.Key == 0 {
 		mq.config.Key, err = ftok(mq.config.Path, mq.config.ProjId)
@@ -147,4 +166,53 @@ func (mq *MessageQueue) connect() (err error) {
 
 	mq.id, err = msgget(mq.config.Key, mq.config.Mode)
 	return err
+}
+
+// Set modify the message queue
+func (mq *MessageQueue) Set(queueSet *QueueSet) error {
+	return ipcSet(mq.id, queueSet)
+}
+
+// SetQbytes modify the qbytes of the message queue
+func (mq *MessageQueue) SetQbytes(qbytes uint64) error {
+	queueSet := &QueueSet{
+		Uid:    mq.stats.Perm.Uid,
+		Gid:    mq.stats.Perm.Gid,
+		Mode:   mq.stats.Perm.Mode,
+		Qbytes: qbytes,
+	}
+	return mq.Set(queueSet)
+}
+
+// SetUid modify the uid of the message queue
+func (mq *MessageQueue) SetUid(uid uint32) error {
+	queueSet := &QueueSet{
+		Uid:    uid,
+		Gid:    mq.stats.Perm.Gid,
+		Mode:   mq.stats.Perm.Mode,
+		Qbytes: mq.stats.Qbytes,
+	}
+	return mq.Set(queueSet)
+}
+
+// SetGid modify the gid of the message queue
+func (mq *MessageQueue) SetGid(gid uint32) error {
+	queueSet := &QueueSet{
+		Uid:    mq.stats.Perm.Uid,
+		Gid:    gid,
+		Mode:   mq.stats.Perm.Mode,
+		Qbytes: mq.stats.Qbytes,
+	}
+	return mq.Set(queueSet)
+}
+
+// SetMode modify the mode of the message queue
+func (mq *MessageQueue) SetMode(mode uint16) error {
+	queueSet := &QueueSet{
+		Uid:    mq.stats.Perm.Uid,
+		Gid:    mq.stats.Perm.Gid,
+		Mode:   mode,
+		Qbytes: mq.stats.Qbytes,
+	}
+	return mq.Set(queueSet)
 }
