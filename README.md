@@ -44,7 +44,7 @@ func main() {
 
 	// Receive a message from the queue, 0 gives you the top message regardless of
 	// message type passed to send().
-	response, mtype, err := mq.ReceiveString(0)
+	response, mtype, err := mq.ReceiveString(0, 0)
 	if err != nil {
 		fmt.Println(err)
 	}
