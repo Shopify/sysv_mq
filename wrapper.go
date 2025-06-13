@@ -17,8 +17,10 @@ typedef struct _sysv_msg {
 } sysv_msg;
 */
 import "C"
-import "unsafe"
-import "errors"
+import (
+	"errors"
+	"unsafe"
+)
 
 const (
 	IPC_CREAT  = C.IPC_CREAT
@@ -101,7 +103,6 @@ func ftok(path string, projId int) (int, error) {
 func msgctl(key int, cmd int) (*C.struct_msqid_ds, error) {
 	info := new(C.struct_msqid_ds)
 	_, err := C.msgctl(C.int(key), C.int(cmd), info)
-
 	return info, err
 }
 
@@ -159,4 +160,15 @@ func ipcStat(key int) (*QueueStats, error) {
 	}
 
 	return stat, nil
+}
+
+// Wraps msgctl(key, IPC_SET, struct msqid_ds *buf)
+func ipcSet(key int, queueSet *QueueSet) error {
+	info := new(C.struct_msqid_ds)
+	info.msg_qbytes = C.ulong(queueSet.Qbytes)
+	info.msg_perm.uid = C.uint(queueSet.Uid)
+	info.msg_perm.gid = C.uint(queueSet.Gid)
+	info.msg_perm.mode = C.ushort(queueSet.Mode)
+	_, err := C.msgctl(C.int(key), C.int(IPC_SET), info)
+	return err
 }
